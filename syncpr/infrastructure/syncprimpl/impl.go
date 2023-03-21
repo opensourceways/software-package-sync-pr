@@ -15,7 +15,8 @@ func NewSyncPR(cfg *Config) *syncPR {
 		shell:   cfg.SyncRepoShell,
 		workDir: cfg.WorkDir,
 		robotRepo: robotRepo{
-			gitURL: cfg.RobotRepo.remoteURL(),
+			robot:  cfg.Robot.Credential.UserName,
+			gitURL: cfg.Robot.remoteURL(),
 		},
 	}
 }
