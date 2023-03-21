@@ -6,7 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/opensourceways/software-package-sync-pr/syncpr/domain/syncpr"
+	"github.com/opensourceways/software-package-sync-pr/syncpr/domain"
 	"github.com/opensourceways/software-package-sync-pr/utils"
 )
 
@@ -27,7 +27,7 @@ type syncPR struct {
 	robotRepo robotRepo
 }
 
-func (impl *syncPR) Sync(pr *syncpr.PullRequest) error {
+func (impl *syncPR) Sync(pr *domain.PullRequest) error {
 	if err := impl.syncPRBranch(pr); err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (impl *syncPR) Sync(pr *syncpr.PullRequest) error {
 	return impl.robotRepo.createPR(pr, branch)
 }
 
-func (impl *syncPR) syncPRBranch(pr *syncpr.PullRequest) error {
+func (impl *syncPR) syncPRBranch(pr *domain.PullRequest) error {
 	params := []string{
 		impl.shell,
 		impl.workDir,
@@ -64,6 +64,6 @@ func (impl *syncPR) syncPRBranch(pr *syncpr.PullRequest) error {
 	return err
 }
 
-func (impl *syncPR) localBranch(pr *syncpr.PullRequest) string {
+func (impl *syncPR) localBranch(pr *domain.PullRequest) string {
 	return fmt.Sprintf("pull%d", pr.Num)
 }
