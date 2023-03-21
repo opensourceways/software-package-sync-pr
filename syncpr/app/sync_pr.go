@@ -12,7 +12,7 @@ import (
 type CmdToSyncPR = domain.PullRequest
 
 type SyncService interface {
-	SyncRepo(*CmdToSyncPR) error
+	SyncPR(*CmdToSyncPR) error
 }
 
 func NewSyncService(
@@ -31,7 +31,7 @@ type syncService struct {
 	syncpr syncpr.SyncPR
 }
 
-func (s *syncService) SyncRepo(cmd *CmdToSyncPR) (err error) {
+func (s *syncService) SyncPR(cmd *CmdToSyncPR) (err error) {
 	if k := cmd.Org + cmd.Repo; s.rl.tryLock(k) {
 		err = s.doSync(cmd)
 		s.rl.unlock(k)
