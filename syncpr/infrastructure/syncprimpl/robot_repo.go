@@ -21,20 +21,25 @@ type giteeClient interface {
 	) (gitee.PullRequest, error)
 }
 
-type giteePR struct {
-	cli   giteeClient
-	robot string
+type robotRepo struct {
+	cli    giteeClient
+	robot  string
+	gitURL string
 }
 
-func (h *giteePR) headBranch(localBranch string) string {
+func (h *robotRepo) remoteURL(repo string) string {
+	return h.gitURL + repo
+}
+
+func (h *robotRepo) headBranch(localBranch string) string {
 	return fmt.Sprintf("%s:%s", h.robot, localBranch)
 }
 
-func (h *giteePR) hasPR(pr *syncpr.PullRequest, localBranch string) (has bool, err error) {
+func (h *robotRepo) hasCreatedPR(pr *syncpr.PullRequest, localBranch string) (has bool, err error) {
 	opt := sdk.ListPullRequestOpt{
 		State: "open",
 		Head:  h.headBranch(localBranch),
-		Base:  pr.TargetBranch,
+		Base:  pr.Base,
 	}
 
 	prs, err := h.cli.GetPullRequests(pr.Org, pr.Repo, opt)
@@ -55,18 +60,18 @@ func (h *giteePR) hasPR(pr *syncpr.PullRequest, localBranch string) (has bool, e
 	)
 }
 
-func (h *giteePR) createPR(pr *syncpr.PullRequest, localBranch string) error {
+func (h *robotRepo) createPR(pr *syncpr.PullRequest, localBranch string) error {
 	title := ""
 
 	_, err := h.cli.CreatePullRequest(
 		pr.Org, pr.Repo, title, pr.Body,
 		h.headBranch(localBranch),
-		pr.TargetBranch, false,
+		pr.Base, false,
 	)
 
 	return err
 }
 
-func (h *giteePR) tryFork(pr *syncpr.PullRequest) error {
+func (h *robotRepo) tryFork(pr *syncpr.PullRequest) error {
 	return nil
 }

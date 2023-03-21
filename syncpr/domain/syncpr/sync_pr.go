@@ -5,9 +5,8 @@ type PullRequest struct {
 	Repo     string
 	Num      int
 	Body     string
+	Base     string // Base is the branch to be merged to
 	RepoLink string
-	// TargetBranch is the branch to be merged to
-	TargetBranch string
 }
 
 type SyncPR interface {

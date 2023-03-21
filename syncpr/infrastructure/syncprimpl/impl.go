@@ -12,17 +12,18 @@ import (
 
 func NewSyncPR(cfg *Config) *syncPR {
 	return &syncPR{
-		shell:     cfg.SyncRepoShell,
-		workDir:   cfg.WorkDir,
-		robotRepo: cfg.RobotRepo.remoteURL(),
+		shell:   cfg.SyncRepoShell,
+		workDir: cfg.WorkDir,
+		robotRepo: robotRepo{
+			gitURL: cfg.RobotRepo.remoteURL(),
+		},
 	}
 }
 
 type syncPR struct {
 	shell     string
 	workDir   string
-	robotRepo string
-	giteePR   giteePR
+	robotRepo robotRepo
 }
 
 func (impl *syncPR) Sync(pr *syncpr.PullRequest) error {
@@ -32,15 +33,15 @@ func (impl *syncPR) Sync(pr *syncpr.PullRequest) error {
 
 	branch := impl.localBranch(pr)
 
-	if b, err := impl.giteePR.hasPR(pr, branch); err != nil || b {
+	if b, err := impl.robotRepo.hasCreatedPR(pr, branch); err != nil || b {
 		return err
 	}
 
-	if err := impl.giteePR.tryFork(pr); err != nil {
+	if err := impl.robotRepo.tryFork(pr); err != nil {
 		return err
 	}
 
-	return impl.giteePR.createPR(pr, branch)
+	return impl.robotRepo.createPR(pr, branch)
 }
 
 func (impl *syncPR) syncPRBranch(pr *syncpr.PullRequest) error {
@@ -48,7 +49,7 @@ func (impl *syncPR) syncPRBranch(pr *syncpr.PullRequest) error {
 		impl.shell,
 		impl.workDir,
 		strconv.Itoa(pr.Num), pr.RepoLink,
-		impl.robotRepo + pr.Repo,
+		impl.robotRepo.remoteURL(pr.Repo),
 	}
 
 	_, err, _ := utils.RunCmd(params...)

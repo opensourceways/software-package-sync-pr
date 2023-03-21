@@ -8,31 +8,31 @@ import (
 const repoEndpointPrefix = "https://"
 
 type Config struct {
-	WorkDir       string    `json:"work_dir"         required:"true"`
-	RobotRepo     robotRepo `json:"robot_repo"       required:"true"`
-	SyncRepoShell string    `json:"sync_repo_shell"  required:"true"`
+	WorkDir       string          `json:"work_dir"         required:"true"`
+	RobotRepo     robotRepoConfig `json:"robot_repo"       required:"true"`
+	SyncRepoShell string          `json:"sync_repo_shell"  required:"true"`
 }
 
 func (cfg *Config) Validate() error {
 	return cfg.RobotRepo.validate()
 }
 
-// robotRepo
-type robotRepo struct {
-	Endpoint   string     `json:"endpoint"    required:"true"`
+// robotRepoConfig
+type robotRepoConfig struct {
+	HomeLink   string     `json:"home_link"   required:"true"`
 	Credential credential `json:"credential"  required:"true"`
 }
 
-func (t *robotRepo) validate() error {
-	if !strings.HasPrefix(t.Endpoint, repoEndpointPrefix) {
+func (t *robotRepoConfig) validate() error {
+	if !strings.HasPrefix(t.HomeLink, repoEndpointPrefix) {
 		return fmt.Errorf("unsupported protocol")
 	}
 
 	return nil
 }
 
-func (t *robotRepo) remoteURL() string {
-	e := strings.TrimSuffix(t.Endpoint, "/")
+func (t *robotRepoConfig) remoteURL() string {
+	e := strings.TrimSuffix(t.HomeLink, "/")
 
 	return fmt.Sprintf(
 		"%s%s:%sxi@%s/",
