@@ -46,7 +46,7 @@ func (impl *syncPR) syncPRBranch(pr *domain.PullRequest) error {
 	params := []string{
 		impl.shell,
 		impl.workDir,
-		strconv.Itoa(pr.Num), pr.RepoLink,
+		strconv.Itoa(pr.Num), pr.CloneURL,
 		impl.robotRepo.remoteURL(pr.Repo),
 	}
 

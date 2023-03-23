@@ -17,5 +17,5 @@ type PullRequest struct {
 
 	Body     string
 	Base     string // Base is the branch to be merged to
-	RepoLink string
+	CloneURL string
 }
