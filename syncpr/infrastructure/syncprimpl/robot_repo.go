@@ -12,6 +12,8 @@ import (
 type giteeClient interface {
 	GetRepo(org, repo string) (gitee.Project, error)
 
+	ForkRepo(org, repo string) (gitee.Project, error)
+
 	// GetPullRequests
 	GetPullRequests(
 		org, repo string, opts sdk.ListPullRequestOpt,
@@ -23,10 +25,24 @@ type giteeClient interface {
 	) (gitee.PullRequest, error)
 }
 
+func newRobotRepo(cfg *Config) robotRepo {
+	cli := sdk.NewClient(func() []byte {
+		return []byte(cfg.Robot.Credential.Token)
+	})
+
+	return robotRepo{
+		repoCache: newRepoCache(),
+		cli:       cli,
+		robot:     cfg.Robot.Credential.UserName,
+		gitURL:    cfg.Robot.remoteURL(),
+	}
+}
+
 type robotRepo struct {
-	cli    giteeClient
-	robot  string
-	gitURL string
+	repoCache *repoCache
+	cli       giteeClient
+	robot     string
+	gitURL    string
 }
 
 func (h *robotRepo) remoteURL(repo string) string {
@@ -75,19 +91,32 @@ func (h *robotRepo) createPR(pr *domain.PullRequest, localBranch string) error {
 }
 
 func (h *robotRepo) tryFork(pr *domain.PullRequest) error {
-	if b, err := h.hasRepo(pr); err != nil || b {
-		return err
+	if h.hasRepo(pr) {
+		return nil
 	}
 
-	// fork
-	return nil
+	_, err := h.cli.ForkRepo(pr.Org, pr.Repo)
+	if err == nil {
+		h.repoCache.addRepo(pr.Repo)
+	} else {
+		if h.hasRepo(pr) {
+			err = nil
+		}
+	}
+
+	return err
 }
 
-func (h *robotRepo) hasRepo(pr *domain.PullRequest) (bool, error) {
-	_, err := h.cli.GetRepo(pr.Org, pr.Repo)
-	if err != nil {
-		// check if exists
+func (h *robotRepo) hasRepo(pr *domain.PullRequest) bool {
+	if h.repoCache.hasRepo(pr.Repo) {
+		return true
 	}
 
-	return true, nil
+	if _, err := h.cli.GetRepo(h.robot, pr.Repo); err != nil {
+		return false
+	}
+
+	h.repoCache.addRepo(pr.Repo)
+
+	return true
 }
