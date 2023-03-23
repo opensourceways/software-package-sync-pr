@@ -33,7 +33,8 @@ func (s *server) handlePR(data []byte, header map[string]string) error {
 
 	cmd, err := msg.toCmd(data, header)
 	if err != nil {
-		return err
+		// it is almost the invalid event. ignore it.
+		return nil
 	}
 
 	return s.service.SyncPR(&cmd)
