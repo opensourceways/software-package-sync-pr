@@ -68,7 +68,7 @@ func (msg *msgToHandlePR) genCmd(e *github.PullRequestEvent) (cmd app.CmdToSyncP
 		},
 		Body:     pr.GetBody(),
 		Base:     pr.GetBase().GetRef(),
-		RepoLink: repo.GetCloneURL(),
+		CloneURL: repo.GetCloneURL(),
 	}
 }
 

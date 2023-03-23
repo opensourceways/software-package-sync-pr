@@ -12,12 +12,9 @@ import (
 
 func NewSyncPR(cfg *Config) *syncPR {
 	return &syncPR{
-		shell:   cfg.SyncRepoShell,
-		workDir: cfg.WorkDir,
-		robotRepo: robotRepo{
-			robot:  cfg.Robot.Credential.UserName,
-			gitURL: cfg.Robot.remoteURL(),
-		},
+		shell:     cfg.SyncRepoShell,
+		workDir:   cfg.WorkDir,
+		robotRepo: newRobotRepo(cfg),
 	}
 }
 
@@ -49,7 +46,7 @@ func (impl *syncPR) syncPRBranch(pr *domain.PullRequest) error {
 	params := []string{
 		impl.shell,
 		impl.workDir,
-		strconv.Itoa(pr.Num), pr.RepoLink,
+		strconv.Itoa(pr.Num), pr.CloneURL,
 		impl.robotRepo.remoteURL(pr.Repo),
 	}
 
