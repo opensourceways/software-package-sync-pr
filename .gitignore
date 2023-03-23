@@ -6,7 +6,7 @@
 *.dylib
 *.b
 message-server/message-server
-
+.idea
 # Test binary, built with `go test -c`
 *.test
 
