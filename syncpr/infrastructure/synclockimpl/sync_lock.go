@@ -9,18 +9,20 @@ import (
 	"github.com/opensourceways/software-package-sync-pr/syncpr/infrastructure/cache"
 )
 
-func NewRepoSyncLock() syncLock {
+func NewRepoSyncLock(expiration time.Duration) syncLock {
 	return syncLock{
-		l: cache.Instance(),
+		l:          cache.Instance(),
+		expiration: expiration,
 	}
 }
 
 type syncLock struct {
-	l lock
+	l          lock
+	expiration time.Duration
 }
 
 func (impl syncLock) TryLock(p *domain.PullRequestBasic) error {
-	success, err := impl.l.Lock(context.Background(), p.String(), p.String(), time.Minute*30)
+	success, err := impl.l.Lock(context.Background(), p.String(), p.String(), impl.expiration)
 	if err != nil {
 		return err
 	}
