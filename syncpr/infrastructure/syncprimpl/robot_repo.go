@@ -6,10 +6,12 @@ import (
 	"github.com/opensourceways/go-gitee/gitee"
 	sdk "github.com/opensourceways/robot-gitee-lib/client"
 
-	"github.com/opensourceways/software-package-sync-pr/syncpr/domain/syncpr"
+	"github.com/opensourceways/software-package-sync-pr/syncpr/domain"
 )
 
 type giteeClient interface {
+	GetRepo(org, repo string) (gitee.Project, error)
+
 	// GetPullRequests
 	GetPullRequests(
 		org, repo string, opts sdk.ListPullRequestOpt,
@@ -35,7 +37,7 @@ func (h *robotRepo) headBranch(localBranch string) string {
 	return fmt.Sprintf("%s:%s", h.robot, localBranch)
 }
 
-func (h *robotRepo) hasCreatedPR(pr *syncpr.PullRequest, localBranch string) (has bool, err error) {
+func (h *robotRepo) hasCreatedPR(pr *domain.PullRequest, localBranch string) (has bool, err error) {
 	opt := sdk.ListPullRequestOpt{
 		State: "open",
 		Head:  h.headBranch(localBranch),
@@ -60,7 +62,7 @@ func (h *robotRepo) hasCreatedPR(pr *syncpr.PullRequest, localBranch string) (ha
 	)
 }
 
-func (h *robotRepo) createPR(pr *syncpr.PullRequest, localBranch string) error {
+func (h *robotRepo) createPR(pr *domain.PullRequest, localBranch string) error {
 	title := ""
 
 	_, err := h.cli.CreatePullRequest(
@@ -72,6 +74,20 @@ func (h *robotRepo) createPR(pr *syncpr.PullRequest, localBranch string) error {
 	return err
 }
 
-func (h *robotRepo) tryFork(pr *syncpr.PullRequest) error {
+func (h *robotRepo) tryFork(pr *domain.PullRequest) error {
+	if b, err := h.hasRepo(pr); err != nil || b {
+		return err
+	}
+
+	// fork
 	return nil
+}
+
+func (h *robotRepo) hasRepo(pr *domain.PullRequest) (bool, error) {
+	_, err := h.cli.GetRepo(pr.Org, pr.Repo)
+	if err != nil {
+		// check if exists
+	}
+
+	return true, nil
 }
