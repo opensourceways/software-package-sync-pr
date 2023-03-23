@@ -16,6 +16,8 @@ const (
 	msgHeaderUserAgent   = "User-Agent"
 	msgHeaderEventType   = "X-GitHub-Event"
 	eventTypePullRequest = "pull_request"
+	actionOpened         = "opened"
+	actionSynchronize    = "synchronize"
 )
 
 type msgToHandlePR struct {
@@ -43,8 +45,8 @@ func (msg *msgToHandlePR) toCmd(payload []byte, header map[string]string) (
 		return
 	}
 
-	if e.GetAction() != "opened" {
-		err = errors.New("not opened")
+	if a := e.GetAction(); a != actionOpened && a != actionSynchronize {
+		err = errors.New("invalid action")
 
 		return
 	}
@@ -66,7 +68,7 @@ func (msg *msgToHandlePR) genCmd(e *github.PullRequestEvent) (cmd app.CmdToSyncP
 		},
 		Body:     pr.GetBody(),
 		Base:     pr.GetBase().GetRef(),
-		RepoLink: repo.GetURL(),
+		RepoLink: repo.GetCloneURL(),
 	}
 }
 
